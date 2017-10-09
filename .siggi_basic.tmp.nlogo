@@ -82,13 +82,14 @@ to move-resident
   ask min-one-of turtles with [neighborhood = nbh] [ satisfaction self nbh] [
     set nbh relocate self
   ]
-
   ;; if this breaches the maximum capacity of the neighborhood he pushes out the poorest one
   while [count turtles with [neighborhood = nbh] > nbh-max-cap] [
     ask min-one-of turtles with [neighborhood = nbh] [ a-wealth ] [
       set nbh relocate self
     ]
   ]
+
+
 end
 
 to-report relocate [resident]
@@ -104,6 +105,8 @@ to-report relocate [resident]
   ;; find the neighborhood he can afford and is the happiest to go to
   let max-nbh position (max sat-vector) sat-vector
   ;; TODO: what if he can't go anywhere?
+
+
   set neighborhood max-nbh
   report neighborhood
 end
