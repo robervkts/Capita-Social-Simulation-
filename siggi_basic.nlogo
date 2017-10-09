@@ -1,5 +1,8 @@
+breed [borders border]
+breed [persons person]
+
 ;; The resident attributes
-turtles-own [
+persons-own [
   neighborhood  ;;the number of the neighborhood that the resident currently lives in
   d-art  ;; the resident's desire for art
   d-wealth ;; the resident's desire for wealth
@@ -20,6 +23,10 @@ globals [
   a-wealth-mm
   a-art-alpha
   a-art-mm
+
+  a-art-max
+  a-wealth-max
+  border-width
 ]
 
 
@@ -36,8 +43,9 @@ to setup
   set a-art-alpha 1.16
   set a-art-mm 1
 
+  setup-borders
   setup-patches
-  setup-turtles
+  setup-persons
   reset-ticks
 end
 
@@ -46,46 +54,66 @@ to setup-patches
 
 end
 
+;; Create borders
+to setup-borders
+  set border-width 0.05
+  foreach (range (num-of-nbh)) [ [x]->
+    create-borders 1 [ setxy x 0 ]
+    ask borders [
+      set shape "full square"
+      set size 1 - border-width
+      set color gray + 4
+    ]
+  ]
+end
+
 ;; Create random agents for the neighborhoods
-to setup-turtles
+to setup-persons
   ;; create res-per-nbh amount of residents for each neighborhood, according to the slider
   ;; we position them in the corner of the patch. They can be moved around the patch later to represent their attributes.
   foreach (range (num-of-nbh)) [ [x]->
-    create-turtles res-per-nbh [ setxy x 0 ]
+    create-persons res-per-nbh [ setxy x 0 ]
   ]
 
   ;; initialize the residents. These distributions can be changed later and correlations added.
-  ask turtles [
+  ask persons [
     set shape "dot"
-    set size 0.1
+    set size 0.05
     set neighborhood xcor
+    set color 15 + 20 * neighborhood
     set d-art random-tnormal d-art-u d-art-s
     set d-wealth random-tnormal d-wealth-u d-wealth-s
     set a-art random-pareto a-art-alpha a-art-mm
     set a-wealth random-pareto a-wealth-alpha a-wealth-mm
   ]
+
+  update-neighbourhood-distribution
 end
 
 to go
   move-resident
+  update-neighbourhood-distribution
   tick
 end
 
 to move-resident
   ;; choose a random non-empty neighborhood
   let nbh -1
-  while [count turtles with [neighborhood = nbh] <= 0] [
+  while [count persons with [neighborhood = nbh] <= 0] [
     set nbh random (num-of-nbh)
   ]
 
   ;; find the least satisfied resident in the neighborhood and move him to the one where he would be the happiest
-  ask min-one-of turtles with [neighborhood = nbh] [ satisfaction self nbh] [
+;  ask min-one-of persons with [neighborhood = nbh] [ satisfaction self nbh] [
+;    set nbh relocate self
+;  ]
+  ask one-of persons with [neighborhood = nbh] [
     set nbh relocate self
   ]
 
   ;; if this breaches the maximum capacity of the neighborhood he pushes out the poorest one
-  while [count turtles with [neighborhood = nbh] > nbh-max-cap] [
-    ask min-one-of turtles with [neighborhood = nbh] [ a-wealth ] [
+  while [count persons with [neighborhood = nbh] > nbh-max-cap] [
+    ask min-one-of persons with [neighborhood = nbh] [ a-wealth ] [
       set nbh relocate self
     ]
   ]
@@ -97,7 +125,7 @@ to-report relocate [resident]
   ;; If the resident can't afford to live in a neighborhood he will not move there, defined as having satisfaction -1
   ;; He can't afford it if it is full and he is below average wealth
   foreach (range (num-of-nbh)) [ [x]->
-    if ([a-wealth] of resident < average-wealth x) and (count turtles with [neighborhood = x] >= nbh-max-cap)  [
+    if ([a-wealth] of resident < average-wealth x) and (count persons with [neighborhood = x] >= nbh-max-cap)  [
       set sat-vector replace-item x sat-vector -1
     ]
   ]
@@ -110,36 +138,36 @@ end
 
 ;; calculate residents satisfaction in neighborhood number nbh
 to-report satisfaction [resident nbh ]
-  let neighbor-set other turtles with [neighborhood = nbh]
+  let neighbor-set other persons with [neighborhood = nbh]
   report ([d-art] of resident * sum [a-art] of neighbor-set) + ([d-wealth] of resident * sum [a-wealth] of neighbor-set)
 end
 
 to-report average-wealth [nbh]
-  if count turtles with [neighborhood = nbh] = 0 [
+  if count persons with [neighborhood = nbh] = 0 [
     report 0
   ]
-  report mean [a-wealth] of turtles with [neighborhood = nbh]
+  report mean [a-wealth] of persons with [neighborhood = nbh]
 end
 
 to-report average-art [nbh]
-  if count turtles with [neighborhood = nbh] = 0 [
+  if count persons with [neighborhood = nbh] = 0 [
     report 0
   ]
-  report mean [a-art] of turtles with [neighborhood = nbh]
+  report mean [a-art] of persons with [neighborhood = nbh]
 end
 
 to-report std-wealth [nbh]
-  if count turtles with [neighborhood = nbh] < 2 [
+  if count persons with [neighborhood = nbh] < 2 [
     report 0
   ]
-  report standard-deviation [a-wealth] of turtles with [neighborhood = nbh]
+  report standard-deviation [a-wealth] of persons with [neighborhood = nbh]
 end
 
 to-report std-art [nbh]
-  if count turtles with [neighborhood = nbh] < 2 [
+  if count persons with [neighborhood = nbh] < 2 [
     report 0
   ]
-  report standard-deviation [a-art] of turtles with [neighborhood = nbh]
+  report standard-deviation [a-art] of persons with [neighborhood = nbh]
 end
 
 ;; draw from the pareto distribution
@@ -156,15 +184,57 @@ to-report random-tnormal [u s]
   report retval
 end
 
+
+;; Graphics
+to update-neighbourhood-distribution
+  foreach [0 1 2 3 4]
+  [
+    x ->
+    ifelse logaritmic-persons
+    [ move-in-neighbourhood-log x]
+    [ move-in-neighbourhood x ]
+  ]
+end
+
+
+;; Graphics
+to move-in-neighbourhood [neighbourhood-index] ;give neigbourhood index
+  let neighbourhood-patch one-of (patches with [pxcor = neighbourhood-index])
+  set a-art-max [a-art] of max-one-of persons [a-art]
+  set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
+  ask persons-on neighbourhood-patch
+  [
+;    set color 15 + 20 * neighborhood
+    let wealth-plot-value (a-wealth / a-wealth-max)
+    let art-plot-value (a-art / a-art-max)
+    setxy (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
+  ]
+end
+
+
+;; Graphics
+to move-in-neighbourhood-log [neighbourhood-index] ;give neigbourhood index
+  let neighbourhood-patch one-of (patches with [pxcor = neighbourhood-index])
+  set a-art-max [a-art] of max-one-of persons [a-art]
+  set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
+  ask persons-on neighbourhood-patch
+  [
+;    set color 15 + 20 * neighborhood
+    let wealth-plot-value sqrt (a-wealth / a-wealth-max)
+    let art-plot-value sqrt (a-art / a-art-max)
+    setxy (neighborhood - 0.5 + border-width  + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
+  ]
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+215
 10
-718
-119
+1223
+219
 -1
 -1
-100.0
+200.0
 1
 10
 1
@@ -227,17 +297,17 @@ res-per-nbh
 res-per-nbh
 0
 100
-97.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
 PLOT
-762
-16
-962
-166
+217
+246
+417
+396
 Number of residents in each neighborhood
 time
 #
@@ -249,11 +319,11 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles with [neighborhood = 0]"
-"pen-1" 1.0 0 -7500403 true "" "plot count turtles with [neighborhood = 1]"
-"pen-2" 1.0 0 -2674135 true "" "plot count turtles with [neighborhood = 2]"
-"pen-3" 1.0 0 -955883 true "" "plot count turtles with [neighborhood = 3]"
-"pen-4" 1.0 0 -6459832 true "" "plot count turtles with [neighborhood = 4]"
+"default" 1.0 0 -16777216 true "" "plot count persons with [neighborhood = 0]"
+"pen-1" 1.0 0 -7500403 true "" "plot count persons with [neighborhood = 1]"
+"pen-2" 1.0 0 -2674135 true "" "plot count persons with [neighborhood = 2]"
+"pen-3" 1.0 0 -955883 true "" "plot count persons with [neighborhood = 3]"
+"pen-4" 1.0 0 -6459832 true "" "plot count persons with [neighborhood = 4]"
 
 SLIDER
 14
@@ -264,17 +334,17 @@ nbh-max-cap
 nbh-max-cap
 0
 100
-100.0
+12.0
 1
 1
 NIL
 HORIZONTAL
 
 PLOT
-975
-18
-1175
-168
+430
+248
+630
+398
 a-wealth
 time
 average wealth
@@ -293,10 +363,10 @@ PENS
 "pen-4" 1.0 0 -6459832 true "" "plot average-wealth 4"
 
 PLOT
-1197
-19
-1397
-169
+652
+249
+852
+399
 a-art
 time
 average a-art
@@ -315,10 +385,10 @@ PENS
 "pen-4" 1.0 0 -6459832 true "" "plot average-art 4"
 
 PLOT
-977
-184
-1177
-334
+875
+247
+1075
+397
 a-wealth
 time
 std wealth
@@ -337,10 +407,10 @@ PENS
 "pen-4" 1.0 0 -6459832 true "" "plot std-wealth 4"
 
 PLOT
-1195
-190
-1395
-340
+1092
+249
+1292
+399
 a-art
 time
 std art
@@ -357,6 +427,39 @@ PENS
 "pen-2" 1.0 0 -2674135 true "" "plot std-art 2"
 "pen-3" 1.0 0 -955883 true "" "plot std-art 3"
 "pen-4" 1.0 0 -6459832 true "" "plot std-art 4"
+
+SWITCH
+19
+171
+175
+204
+logaritmic-persons
+logaritmic-persons
+0
+1
+-1000
+
+MONITOR
+1311
+69
+1400
+114
+NIL
+a-wealth-max
+4
+1
+11
+
+MONITOR
+1313
+128
+1382
+173
+NIL
+a-art-max
+4
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -536,6 +639,12 @@ Circle -7500403 true true 96 51 108
 Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
+
+full square
+false
+0
+Rectangle -7500403 true true 30 30 270 270
+Rectangle -7500403 true true 0 0 315 330
 
 house
 false
