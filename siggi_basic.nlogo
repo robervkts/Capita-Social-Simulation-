@@ -307,7 +307,7 @@ res-per-nbh
 res-per-nbh
 0
 100
-10.0
+62.0
 1
 1
 NIL
@@ -344,7 +344,7 @@ nbh-max-cap
 nbh-max-cap
 0
 100
-12.0
+69.0
 1
 1
 NIL
@@ -653,8 +653,7 @@ Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
 full square
 false
 0
-Rectangle -7500403 true true 30 30 270 270
-Rectangle -7500403 true true 0 0 315 330
+Rectangle -7500403 true true 0 0 300 300
 
 house
 false
