@@ -28,7 +28,7 @@ globals [
   a-wealth-max
   border-width
 
-  wealth-move-success;; Matrix with wealth and number of success when trying to move out.
+  m-wealth-move;; Matrix with wealth and number of success when trying to move out. 1 column is wealth, 2 column is success when moving out, 3 column is getting kick out
 ]
 
 
@@ -49,11 +49,11 @@ to setup
   setup-patches
   setup-persons
 
-  set wealth-move-success matrix:make-constant count turtles 3 -1
+  set  m-wealth-move matrix:make-constant count turtles 3 -1
   ask persons [
-    matrix:set wealth-move-success who 0 a-wealth
-    matrix:set wealth-move-success who 1 0
-    matrix:set wealth-move-success who 2 0
+    matrix:set  m-wealth-move who 0 a-wealth
+    matrix:set  m-wealth-move who 1 0
+    matrix:set  m-wealth-move who 2 0
   ]
 
   reset-ticks
@@ -118,18 +118,18 @@ to move-resident
 ;    set nbh relocate self
 ;  ]
   ask one-of persons with [neighborhood = nbh] [
-    set nbh relocate self
+    set nbh relocate self false
   ]
 
   ;; if this breaches the maximum capacity of the neighborhood he pushes out the poorest one
   while [count persons with [neighborhood = nbh] > nbh-max-cap] [
     ask min-one-of persons with [neighborhood = nbh] [ a-wealth ] [
-      set nbh relocate self
+      set nbh relocate self true
     ]
   ]
 end
 
-to-report relocate [resident]
+to-report relocate [resident forced]
   ;; calculate the satisfaction for each neighborhood
   let sat-vector n-values num-of-nbh [ i -> satisfaction self i ]
   ;; If the resident can't afford to live in a neighborhood he will not move there, defined as having satisfaction -1
@@ -142,7 +142,25 @@ to-report relocate [resident]
   ;; find the neighborhood he can afford and is the happiest to go to
   let max-nbh position (max sat-vector) sat-vector
   ;; TODO: what if he can't go anywhere?
+
+ ifelse(forced)
+  [
+    let number-of-forced-relocations matrix:get m-wealth-move [who] of resident 2
+    set number-of-forced-relocations number-of-forced-relocations + 1
+    matrix:set  m-wealth-move [who] of resident 2 number-of-forced-relocations
+  ]
+  [
+    if(max-nbh != neighborhood)
+    [
+      let number-of-success matrix:get m-wealth-move [who] of resident 1
+      set number-of-success number-of-success + 1
+      matrix:set  m-wealth-move [who] of resident 1 number-of-success
+
+    ]
+  ]
+
   set neighborhood max-nbh
+
   ;;TODO: Update wealth-move-success to indicate fail or success when trying to move
   report neighborhood
 end
@@ -470,6 +488,25 @@ a-art-max
 4
 1
 11
+
+PLOT
+9
+251
+209
+401
+M/R
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -4699768 true "" "plot sum matrix:get-column m-wealth-move 1"
+"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-move 2"
 
 @#$#@#$#@
 ## WHAT IS IT?
