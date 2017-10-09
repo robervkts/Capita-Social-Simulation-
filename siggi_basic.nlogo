@@ -121,6 +121,27 @@ to-report average-wealth [nbh]
   report mean [a-wealth] of turtles with [neighborhood = nbh]
 end
 
+to-report average-art [nbh]
+  if count turtles with [neighborhood = nbh] = 0 [
+    report 0
+  ]
+  report mean [a-art] of turtles with [neighborhood = nbh]
+end
+
+to-report std-wealth [nbh]
+  if count turtles with [neighborhood = nbh] < 2 [
+    report 0
+  ]
+  report standard-deviation [a-wealth] of turtles with [neighborhood = nbh]
+end
+
+to-report std-art [nbh]
+  if count turtles with [neighborhood = nbh] < 2 [
+    report 0
+  ]
+  report standard-deviation [a-art] of turtles with [neighborhood = nbh]
+end
+
 ;; draw from the pareto distribution
 to-report random-pareto [alpha mm]
   report mm / ( random-float 1 ^ (1 / alpha) )
@@ -206,7 +227,7 @@ res-per-nbh
 res-per-nbh
 0
 100
-10.0
+97.0
 1
 1
 NIL
@@ -243,11 +264,99 @@ nbh-max-cap
 nbh-max-cap
 0
 100
-16.0
+100.0
 1
 1
 NIL
 HORIZONTAL
+
+PLOT
+975
+18
+1175
+168
+a-wealth
+time
+average wealth
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-wealth 0"
+"pen-1" 1.0 0 -7500403 true "" "plot average-wealth 1"
+"pen-2" 1.0 0 -2674135 true "" "plot average-wealth 2"
+"pen-3" 1.0 0 -955883 true "" "plot average-wealth 3"
+"pen-4" 1.0 0 -6459832 true "" "plot average-wealth 4"
+
+PLOT
+1197
+19
+1397
+169
+a-art
+time
+average a-art
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-art 0"
+"pen-1" 1.0 0 -7500403 true "" "plot average-art 1"
+"pen-2" 1.0 0 -2674135 true "" "plot average-art 2"
+"pen-3" 1.0 0 -955883 true "" "plot average-art 3"
+"pen-4" 1.0 0 -6459832 true "" "plot average-art 4"
+
+PLOT
+977
+184
+1177
+334
+a-wealth
+time
+std wealth
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot std-wealth 0"
+"pen-1" 1.0 0 -7500403 true "" "plot std-wealth 1"
+"pen-2" 1.0 0 -2674135 true "" "plot std-wealth 2"
+"pen-3" 1.0 0 -955883 true "" "plot std-wealth 3"
+"pen-4" 1.0 0 -6459832 true "" "plot std-wealth 4"
+
+PLOT
+1195
+190
+1395
+340
+a-art
+time
+std art
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot std-art 0"
+"pen-1" 1.0 0 -7500403 true "" "plot std-art 1"
+"pen-2" 1.0 0 -2674135 true "" "plot std-art 2"
+"pen-3" 1.0 0 -955883 true "" "plot std-art 3"
+"pen-4" 1.0 0 -6459832 true "" "plot std-art 4"
 
 @#$#@#$#@
 ## WHAT IS IT?

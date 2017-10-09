@@ -82,14 +82,13 @@ to move-resident
   ask min-one-of turtles with [neighborhood = nbh] [ satisfaction self nbh] [
     set nbh relocate self
   ]
+
   ;; if this breaches the maximum capacity of the neighborhood he pushes out the poorest one
   while [count turtles with [neighborhood = nbh] > nbh-max-cap] [
     ask min-one-of turtles with [neighborhood = nbh] [ a-wealth ] [
       set nbh relocate self
     ]
   ]
-
-
 end
 
 to-report relocate [resident]
@@ -105,8 +104,6 @@ to-report relocate [resident]
   ;; find the neighborhood he can afford and is the happiest to go to
   let max-nbh position (max sat-vector) sat-vector
   ;; TODO: what if he can't go anywhere?
-
-
   set neighborhood max-nbh
   report neighborhood
 end
@@ -122,6 +119,27 @@ to-report average-wealth [nbh]
     report 0
   ]
   report mean [a-wealth] of turtles with [neighborhood = nbh]
+end
+
+to-report average-art [nbh]
+  if count turtles with [neighborhood = nbh] = 0 [
+    report 0
+  ]
+  report mean [a-art] of turtles with [neighborhood = nbh]
+end
+
+to-report std-wealth [nbh]
+  if count turtles with [neighborhood = nbh] < 2 [
+    report 0
+  ]
+  report standard-deviation [a-wealth] of turtles with [neighborhood = nbh]
+end
+
+to-report std-art [nbh]
+  if count turtles with [neighborhood = nbh] < 2 [
+    report 0
+  ]
+  report standard-deviation [a-art] of turtles with [neighborhood = nbh]
 end
 
 ;; draw from the pareto distribution
@@ -166,6 +184,24 @@ GRAPHICS-WINDOW
 ticks
 30.0
 
+PLOT
+0
+0
+0
+0
+plot 1
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
 BUTTON
 10
 23
@@ -209,7 +245,7 @@ res-per-nbh
 res-per-nbh
 0
 100
-10.0
+97.0
 1
 1
 NIL
@@ -246,11 +282,77 @@ nbh-max-cap
 nbh-max-cap
 0
 100
-16.0
+100.0
 1
 1
 NIL
 HORIZONTAL
+
+PLOT
+975
+18
+1175
+168
+a-wealth
+time
+average wealth
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-wealth 0"
+"pen-1" 1.0 0 -7500403 true "" "plot average-wealth 1"
+"pen-2" 1.0 0 -2674135 true "" "plot average-wealth 2"
+"pen-3" 1.0 0 -955883 true "" "plot average-wealth 3"
+"pen-4" 1.0 0 -6459832 true "" "plot average-wealth 4"
+
+PLOT
+1197
+19
+1397
+169
+a-art
+time
+average a-art
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-art 0"
+"pen-1" 1.0 0 -7500403 true "" "plot average-art 1"
+"pen-2" 1.0 0 -2674135 true "" "plot average-art 2"
+"pen-3" 1.0 0 -955883 true "" "plot average-art 3"
+"pen-4" 1.0 0 -6459832 true "" "plot average-art 4"
+
+PLOT
+977
+184
+1177
+334
+a-wealth
+time
+std wealth
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot std-wealth 0"
+"pen-1" 1.0 0 -7500403 true "" "plot std-wealth 1"
+"pen-2" 1.0 0 -2674135 true "" "plot std-wealth 2"
+"pen-3" 1.0 0 -955883 true "" "plot std-wealth 3"
+"pen-4" 1.0 0 -6459832 true "" "plot std-wealth 4"
 
 @#$#@#$#@
 ## WHAT IS IT?
