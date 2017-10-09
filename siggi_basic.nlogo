@@ -1,6 +1,6 @@
+extensions [matrix]
 breed [borders border]
 breed [persons person]
-
 ;; The resident attributes
 persons-own [
   neighborhood  ;;the number of the neighborhood that the resident currently lives in
@@ -27,6 +27,8 @@ globals [
   a-art-max
   a-wealth-max
   border-width
+
+  wealth-move-success;; Matrix with wealth and number of success when trying to move out.
 ]
 
 
@@ -46,6 +48,14 @@ to setup
   setup-borders
   setup-patches
   setup-persons
+
+  set wealth-move-success matrix:make-constant count turtles 3 -1
+  ask persons [
+    matrix:set wealth-move-success who 0 a-wealth
+    matrix:set wealth-move-success who 1 0
+    matrix:set wealth-move-success who 2 0
+  ]
+
   reset-ticks
 end
 
@@ -133,6 +143,7 @@ to-report relocate [resident]
   let max-nbh position (max sat-vector) sat-vector
   ;; TODO: what if he can't go anywhere?
   set neighborhood max-nbh
+  ;;TODO: Update wealth-move-success to indicate fail or success when trying to move
   report neighborhood
 end
 
@@ -225,7 +236,6 @@ to move-in-neighbourhood-log [neighbourhood-index] ;give neigbourhood index
     setxy (neighborhood - 0.5 + border-width  + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 215
