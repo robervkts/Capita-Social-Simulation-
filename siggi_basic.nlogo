@@ -49,7 +49,11 @@ to setup
   setup-patches
   setup-persons
 
-  set  m-wealth-move matrix:make-constant count turtles 3 -1
+  let maximun-people-possible num-of-nbh * nbh-max-cap
+  set  m-wealth-move matrix:make-constant maximun-people-possible  3 -1
+  print maximun-persons-possible
+
+
   ask persons [
     matrix:set  m-wealth-move who 0 a-wealth
     matrix:set  m-wealth-move who 1 0
@@ -859,6 +863,22 @@ NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="logaritmic-persons">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="res-per-nbh">
+      <value value="62"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nbh-max-cap">
+      <value value="69"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
