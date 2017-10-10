@@ -51,7 +51,7 @@ to setup
 
   let maximun-people-possible num-of-nbh * nbh-max-cap
   set  m-wealth-move matrix:make-constant maximun-people-possible  3 -1
-  print maximun-persons-possible
+  print maximun-people-possible
 
 
   ask persons [
