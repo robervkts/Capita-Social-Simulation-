@@ -1,3 +1,4 @@
+extensions [matrix]
 breed [borders border]
 breed [persons person]
 breed [averages average]
@@ -32,6 +33,8 @@ globals [
   a-art-max
   a-wealth-max
   border-width
+
+  m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
 ]
 
 
@@ -58,6 +61,16 @@ to setup
   setup-averages
 
   update-neighbourhood-distribution
+
+
+  let maximun-people-possible num-of-nbh * nbh-max-cap ;MAximun number of neighboors
+  set  m-wealth-move matrix:make-constant maximun-people-possible  3 -1 ;Initialize the matrix
+  ask persons [
+    matrix:set  m-wealth-move who 0 a-wealth
+    matrix:set  m-wealth-move who 1 0
+    matrix:set  m-wealth-move who 2 0
+  ]
+
   reset-ticks
 end
 
@@ -193,6 +206,21 @@ to-report relocate [resident forced]
     [
       set color (14 + 10 * neighborhood) ;graphics
     ]
+     ifelse(forced)
+  [
+    let number-of-forced-relocations matrix:get m-wealth-move [who] of resident 2
+    set number-of-forced-relocations number-of-forced-relocations + 1
+    matrix:set  m-wealth-move [who] of resident 2 number-of-forced-relocations
+  ]
+  [
+    if(max-nbh != neighborhood)
+    [
+      let number-of-success matrix:get m-wealth-move [who] of resident 1
+      set number-of-success number-of-success + 1
+      matrix:set  m-wealth-move [who] of resident 1 number-of-success
+
+    ]
+  ]
     set neighborhood max-nbh
   ]
   report [neighborhood] of resident
@@ -421,7 +449,7 @@ nbh-max-cap
 nbh-max-cap
 0
 1000
-100.0
+110.0
 10
 1
 NIL
@@ -726,6 +754,25 @@ acceptable-vacancy-rate
 1
 %
 HORIZONTAL
+
+PLOT
+-15
+280
+210
+445
+Succesful moves vs Forced relocation
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-move 1"
+"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-move 2"
 
 @#$#@#$#@
 ## WHAT IS IT?
