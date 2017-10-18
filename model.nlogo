@@ -570,7 +570,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.3
+-0.6
 0.1
 1
 NIL
