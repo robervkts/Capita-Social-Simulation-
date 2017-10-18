@@ -341,6 +341,24 @@ to-report clone-person [ this-person ];; turtle reporter
     ask this-person [ hatch 1 [ set me self ] ]
     report me
 end
+
+to-report Gini [nbh]
+  let wealths [a-wealth] of persons with [neighborhood = nbh]
+  let sorted-wealths sort wealths
+  let total-wealth sum sorted-wealths
+
+  let wealth-sum-so-far 0
+  let index 0
+  let num-people count persons with [neighborhood = nbh]
+  let gini-reserve 0
+  repeat num-people [
+    set wealth-sum-so-far (wealth-sum-so-far + item index sorted-wealths)
+    set index (index + 1)
+    set gini-reserve gini-reserve + (index / num-people) - (wealth-sum-so-far / total-wealth)
+  ]
+  report gini-reserve
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -522,10 +540,10 @@ a-art-max
 11
 
 PLOT
-1235
-230
-1570
-500
+3
+448
+206
+578
 min wealth
 time
 wealth
@@ -552,7 +570,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
-0.4
+-0.3
 0.1
 1
 NIL
@@ -611,8 +629,8 @@ average-wealth 2
 MONITOR
 815
 225
-872
-270
+873
+271
 avg-w 3
 average-wealth 3
 3
@@ -773,6 +791,28 @@ false
 PENS
 "default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-move 1"
 "pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-move 2"
+
+PLOT
+1232
+235
+1672
+520
+Gini
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -2674135 true "" "plot Gini 0"
+"pen-1" 1.0 0 -955883 true "" "plot Gini 1"
+"pen-2" 1.0 0 -6459832 true "" "plot Gini 2"
+"pen-3" 1.0 0 -1184463 true "" "plot Gini 3"
+"pen-4" 1.0 0 -10899396 true "" "plot Gini 4"
 
 @#$#@#$#@
 ## WHAT IS IT?
