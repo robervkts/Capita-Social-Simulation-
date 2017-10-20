@@ -619,7 +619,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
-0.0
+-0.4
 0.1
 1
 NIL
@@ -852,16 +852,16 @@ NIL
 0.0
 10.0
 0.0
-10.0
+0.0
 true
-false
+true
 "" ""
 PENS
-"default" 1.0 0 -2674135 true "" "plot Gini 0"
-"pen-1" 1.0 0 -955883 true "" "plot Gini 1"
-"pen-2" 1.0 0 -6459832 true "" "plot Gini 2"
-"pen-3" 1.0 0 -1184463 true "" "plot Gini 3"
-"pen-4" 1.0 0 -10899396 true "" "plot Gini 4"
+"neighborhood 0" 1.0 0 -2674135 true "" "plot (Gini 0 / count persons with [neighborhood = 0]) * .5"
+"neighborhood 1" 1.0 0 -955883 true "" "plot (Gini 1 / count persons with [neighborhood = 1]) * .5"
+"neighborhood 2" 1.0 0 -6459832 true "" "plot (Gini 2 / count persons with [neighborhood = 2]) * .5"
+"neighborhood 3" 1.0 0 -1184463 true "" "plot (Gini 3 / count persons with [neighborhood = 3]) * .5"
+"neighborhood 4" 1.0 0 -10899396 true "" "plot (Gini 4 / count persons with [neighborhood = 4]) * .5"
 
 PLOT
 216
