@@ -1,4 +1,4 @@
-extensions [matrix]
+extensions [matrix array]
 breed [borders border]
 breed [persons person]
 breed [averages average]
@@ -358,6 +358,33 @@ to-report Gini [nbh]
   ]
   report gini-reserve
 
+end
+
+to-report track
+
+
+
+  let quartile ceiling (count persons * .25)
+
+  let wealthy max-n-of quartile persons [a-wealth]
+  let poor min-n-of quartile persons [a-wealth]
+
+
+
+  let rich-artist max-one-of wealthy [a-art]
+  let rich-phillistine min-one-of wealthy [a-art]
+  let poor-artist max-one-of poor [a-art]
+  let poor-phillistine min-one-of poor [a-art]
+
+
+
+  let tracked array:from-list n-values 4 [-1]
+  array:set tracked 0 average-wealth [neighborhood] of rich-artist
+  array:set tracked 1 average-wealth [neighborhood] of rich-phillistine
+  array:set tracked 2 average-wealth [neighborhood] of poor-artist
+  array:set tracked 3 average-wealth [neighborhood] of poor-phillistine
+
+  report tracked
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -813,6 +840,27 @@ PENS
 "pen-2" 1.0 0 -6459832 true "" "plot Gini 2"
 "pen-3" 1.0 0 -1184463 true "" "plot Gini 3"
 "pen-4" 1.0 0 -10899396 true "" "plot Gini 4"
+
+PLOT
+216
+513
+698
+792
+tracking
+NIL
+NIL
+0.0
+10.0
+5.0
+5.0
+true
+true
+"" ""
+PENS
+"rich-artist" 1.0 0 -16777216 true "" "plot array:item track 0"
+"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track 1"
+"poor-artist" 1.0 0 -11085214 true "" "plot array:item track 2"
+"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track 3"
 
 @#$#@#$#@
 ## WHAT IS IT?
