@@ -630,7 +630,7 @@ MONITOR
 815
 225
 873
-271
+270
 avg-w 3
 average-wealth 3
 3
