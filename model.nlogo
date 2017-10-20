@@ -33,8 +33,11 @@ globals [
   a-art-u
   a-art-s
 
+  a-art-min
+  a-wealth-min
   a-art-max
   a-wealth-max
+
   border-width
 
   m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
@@ -320,12 +323,14 @@ end
 ;; Graphics
 to move-in-neighborhood [neighborhood-index] ;give neigbourhood index
   let neighborhood-patch one-of (patches with [pxcor = neighborhood-index])
+  set a-art-min [a-art] of min-one-of persons [a-art]
+  set a-wealth-min [a-wealth] of min-one-of persons [a-wealth]
   set a-art-max [a-art] of max-one-of persons [a-art]
   set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
   ask persons-on neighborhood-patch
   [
-    let wealth-plot-value (a-wealth / a-wealth-max)
-    let art-plot-value (a-art / a-art-max)
+    let wealth-plot-value ((a-wealth - a-wealth-min) / (a-wealth-max - a-wealth-min))
+    let art-plot-value ((a-art - a-art-min) / (a-art-max - a-art-min))
     let new_x (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width))
     let new_y (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     setxy new_x new_y
@@ -343,8 +348,9 @@ to move-averages
     let neighborhood-patch one-of (patches with [pxcor = x])
     ask averages-on neighborhood-patch
     [
-      let wealth-plot-value ((average-wealth x) / a-wealth-max)
-      let art-plot-value ((average-art x) / a-art-max)
+      let wealth-plot-value (((average-wealth x) - a-wealth-min) / (a-wealth-max - a-wealth-min))
+      let art-plot-value (((average-art x) - a-art-min) / (a-art-max - a-art-min))
+
       setxy (x - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     ]
   ]
@@ -483,7 +489,7 @@ nbh-max-cap
 nbh-max-cap
 0
 1000
-110.0
+100.0
 10
 1
 NIL
@@ -586,7 +592,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.6
+0.0
 0.1
 1
 NIL
