@@ -1,6 +1,7 @@
 extensions [matrix array]
 breed [borders border]
 breed [persons person]
+breed [clones clone]
 breed [averages average]
 
 ;; The resident attributes
@@ -10,6 +11,8 @@ persons-own [
   d-wealth ;; the resident's desire for wealth
   a-art ;; the resident's art contribution
   a-wealth ;; the resident's wealth contribution
+
+  myclone ;; graphics stuff
 ]
 
 globals [
@@ -30,8 +33,11 @@ globals [
   a-art-u
   a-art-s
 
+  a-art-min
+  a-wealth-min
   a-art-max
   a-wealth-max
+
   border-width
 
   m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
@@ -109,7 +115,8 @@ to setup-persons
     set shape "dot"
     set size 0.05
     set neighborhood xcor
-    set color 15 + 10 * neighborhood
+    set color 17 + 10 * neighborhood
+    set myclone nobody
 
     let corr-vars1 corr-normal-random d-art-u d-art-s 0
     set d-art first corr-vars1
@@ -204,7 +211,19 @@ to-report relocate [resident forced]
     let max-nbh position (max sat-vector) sat-vector
     if (neighborhood != max-nbh)
     [
-      set color (14 + 10 * neighborhood) ;graphics
+      if (myclone != nobody)
+      [ ask myclone [ die ] ]
+      let me nobody
+      let newcolor (color - 2)
+      hatch-clones 1
+      [
+        set me self
+        set color newcolor
+        set shape "dot"
+        set size 0.05
+      ]
+      set myclone me
+      ;set color (15 + 10 * neighborhood) ;graphics
     ]
      ifelse(forced)
   [
@@ -304,18 +323,20 @@ end
 ;; Graphics
 to move-in-neighborhood [neighborhood-index] ;give neigbourhood index
   let neighborhood-patch one-of (patches with [pxcor = neighborhood-index])
+  set a-art-min [a-art] of min-one-of persons [a-art]
+  set a-wealth-min [a-wealth] of min-one-of persons [a-wealth]
   set a-art-max [a-art] of max-one-of persons [a-art]
   set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
   ask persons-on neighborhood-patch
   [
-    set color min list (17.5 + 10 * (floor ((color - 14) / 10))) (color + 0.05)
-    if color = (17.5 + 10 * (floor ((color - 14) / 10)))
-    [
-      set color (17.5 + 10 * neighborhood-index)
-    ]
-    let wealth-plot-value (a-wealth / a-wealth-max)
-    let art-plot-value (a-art / a-art-max)
-    setxy (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
+    let wealth-plot-value ((a-wealth - a-wealth-min) / (a-wealth-max - a-wealth-min))
+    let art-plot-value ((a-art - a-art-min) / (a-art-max - a-art-min))
+    let new_x (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width))
+    let new_y (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
+    setxy new_x new_y
+    ; graphics move clone
+    if (myclone != nobody)
+      [ ask myclone [ setxy new_x new_y ] ]
   ]
 end
 
@@ -327,8 +348,9 @@ to move-averages
     let neighborhood-patch one-of (patches with [pxcor = x])
     ask averages-on neighborhood-patch
     [
-      let wealth-plot-value ((average-wealth x) / a-wealth-max)
-      let art-plot-value ((average-art x) / a-art-max)
+      let wealth-plot-value (((average-wealth x) - a-wealth-min) / (a-wealth-max - a-wealth-min))
+      let art-plot-value (((average-art x) - a-art-min) / (a-art-max - a-art-min))
+
       setxy (x - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     ]
   ]
@@ -494,7 +516,7 @@ nbh-max-cap
 nbh-max-cap
 0
 1000
-110.0
+100.0
 10
 1
 NIL
@@ -597,7 +619,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.6
+0.0
 0.1
 1
 NIL
