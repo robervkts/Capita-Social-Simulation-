@@ -70,6 +70,7 @@ to setup
 
 
   let maximun-people-possible num-of-nbh * nbh-max-cap ;MAximun number of neighboors
+  show maximun-people-possible
   set  m-wealth-move matrix:make-constant maximun-people-possible  3 -1 ;Initialize the matrix
   ask persons [
     matrix:set  m-wealth-move who 0 a-wealth
@@ -382,7 +383,7 @@ to-report Gini [nbh]
 
 end
 
-to-report track
+to-report track-attributes
 
 
 
@@ -405,6 +406,38 @@ to-report track
   array:set tracked 1 average-wealth [neighborhood] of rich-phillistine
   array:set tracked 2 average-wealth [neighborhood] of poor-artist
   array:set tracked 3 average-wealth [neighborhood] of poor-phillistine
+
+  report tracked
+end
+
+to-report track-desires
+
+
+
+  let quartile ceiling (count persons * .25)
+
+  let wealthy max-n-of quartile persons [a-wealth]
+  let poor min-n-of quartile persons [a-wealth]
+
+  let colonizers min-n-of (ceiling quartile * .25) wealthy [d-wealth]
+  let colonizer max-one-of colonizers [d-art]
+  show count colonizers
+
+
+
+  let rich-artist max-one-of wealthy [d-art]
+  let rich-phillistine min-one-of wealthy [d-art]
+  let poor-artist max-one-of poor [d-art]
+  let poor-phillistine min-one-of poor [d-art]
+
+
+
+  let tracked array:from-list n-values 5 [-1]
+  array:set tracked 0 average-wealth [neighborhood] of rich-artist
+  array:set tracked 1 average-wealth [neighborhood] of rich-phillistine
+  array:set tracked 2 average-wealth [neighborhood] of poor-artist
+  array:set tracked 3 average-wealth [neighborhood] of poor-phillistine
+  array:set tracked 4 average-wealth [neighborhood] of colonizer
 
   report tracked
 end
@@ -479,7 +512,7 @@ res-per-nbh
 res-per-nbh
 0
 1000
-97.0
+80.0
 10
 1
 NIL
@@ -619,7 +652,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.4
+-0.5
 0.1
 1
 NIL
@@ -879,10 +912,32 @@ true
 true
 "" ""
 PENS
-"rich-artist" 1.0 0 -16777216 true "" "plot array:item track 0"
-"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track 1"
-"poor-artist" 1.0 0 -11085214 true "" "plot array:item track 2"
-"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track 3"
+"rich-artist" 1.0 0 -16777216 true "" "plot array:item track-attributes 0"
+"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track-attributes 1"
+"poor-artist" 1.0 0 -11085214 true "" "plot array:item track-attributes 2"
+"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track-attributes 3"
+"colonizer" 1.0 0 -5825686 true "" "plot array:item track-desires 4"
+
+PLOT
+715
+515
+1232
+795
+tracking-desires
+NIL
+NIL
+0.0
+10.0
+5.0
+5.0
+true
+true
+"" ""
+PENS
+"rich-artist" 1.0 0 -16777216 true "" "plot array:item track-desires 0"
+"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track-desires 1"
+"poor-artist" 1.0 0 -13840069 true "" "plot array:item track-desires 2"
+"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track-desires 3"
 
 @#$#@#$#@
 ## WHAT IS IT?
