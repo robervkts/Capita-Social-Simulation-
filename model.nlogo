@@ -40,10 +40,10 @@ globals [
 
   border-width
 
-  m-wealth-art-move-relocate;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
+  m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
 ]
 
-
+;; ********************** SETUP ******************************************************
 to setup
   clear-all
 
@@ -66,8 +66,7 @@ to setup
   setup-persons
   setup-averages
 
-  update-neighbourhood-distribution
-
+  initiate-neighbourhood-distribution
 
   let maximun-people-possible count turtles ;Maximun number of neighboors
 ;  show maximun-people-possible
@@ -144,15 +143,16 @@ to setup-averages
   ]
 end
 
+;; ********************** GOOOOOOOOOOOOOOOO ******************************************************
 to go-once
   move-resident
-  update-neighbourhood-distribution
+  move-averages
   tick
 end
 
 to go
   move-resident
-  update-neighbourhood-distribution
+  move-averages
   tick
 end
 
@@ -211,38 +211,24 @@ to-report relocate [resident forced]
   ]
   [
     let max-nbh position (max sat-vector) sat-vector
-    if (neighborhood != max-nbh)
-    [
-      if (myclone != nobody)
-      [ ask myclone [ die ] ]
-      let me nobody
-      let newcolor (color - 2)
-      hatch-clones 1
-      [
-        set me self
-        set color newcolor
-        set shape "dot"
-        set size 0.05
-      ]
-      set myclone me
-      ;set color (15 + 10 * neighborhood) ;graphics
-    ]
-     ifelse(forced)
-  [
-    let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 2
-    set number-of-forced-relocations number-of-forced-relocations + 1
-    matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-forced-relocations
-  ]
-  [
-    if(max-nbh != neighborhood)
-    [
-      let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 1
-      set number-of-success number-of-success + 1
-      matrix:set  m-wealth-art-move-relocate [who] of resident 1 number-of-success
+    update-relocation-color (max-nbh)
 
+    ifelse(forced)
+    [
+      let number-of-forced-relocations matrix:get m-wealth-move [who] of resident 2
+      set number-of-forced-relocations number-of-forced-relocations + 1
+      matrix:set  m-wealth-move [who] of resident 2 number-of-forced-relocations
     ]
-  ]
+    [
+      if(max-nbh != neighborhood)
+      [
+        let number-of-success matrix:get m-wealth-move [who] of resident 1
+        set number-of-success number-of-success + 1
+        matrix:set  m-wealth-move [who] of resident 1 number-of-success
+      ]
+    ]
     set neighborhood max-nbh
+    move-person-visual
   ]
   report [neighborhood] of resident
 end
@@ -312,7 +298,7 @@ end
 
 
 ;; Graphics
-to update-neighbourhood-distribution
+to initiate-neighbourhood-distribution
   foreach range (num-of-nbh)
   [
     x ->
@@ -320,7 +306,6 @@ to update-neighbourhood-distribution
   ]
   move-averages
 end
-
 
 ;; Graphics
 to move-in-neighborhood [neighborhood-index] ;give neigbourhood index
@@ -344,8 +329,6 @@ end
 
 ;; Graphics
 to move-averages
-  set a-art-max [a-art] of max-one-of persons [a-art]
-  set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
   foreach (range (num-of-nbh)) [ [x]->
     let neighborhood-patch one-of (patches with [pxcor = x])
     ask averages-on neighborhood-patch
@@ -356,6 +339,38 @@ to move-averages
       setxy (x - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     ]
   ]
+end
+
+;; Graphics
+to move-person-visual ;give neigbourhood index
+
+  let wealth-plot-value ((a-wealth - a-wealth-min) / (a-wealth-max - a-wealth-min))
+  let art-plot-value ((a-art - a-art-min) / (a-art-max - a-art-min))
+  let new_x (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width))
+  let new_y (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
+  setxy new_x new_y
+  ; graphics move clone
+  if (myclone != nobody)
+    [ ask myclone [ setxy new_x new_y ] ]
+end
+
+to update-relocation-color [max-nbh]
+
+  if (neighborhood != max-nbh)
+    [
+      if (myclone != nobody)
+      [ ask myclone [ die ] ]
+      let me nobody
+      let newcolor (color - 2)
+      hatch-clones 1
+      [
+        set me self
+        set color newcolor
+        set shape "dot"
+        set size 0.05
+      ]
+      set myclone me
+    ]
 end
 
 ;; Unethical stuff
@@ -386,8 +401,6 @@ end
 
 to-report track-attributes
 
-
-
   let quartile ceiling (count persons * .25)
 
   let wealthy max-n-of quartile persons [a-wealth]
@@ -412,8 +425,6 @@ to-report track-attributes
 end
 
 to-report track-desires
-
-
 
   let quartile ceiling (count persons * .25)
 
@@ -507,14 +518,14 @@ NIL
 SLIDER
 10
 55
-182
+180
 88
 res-per-nbh
 res-per-nbh
 0
-1000
-960.0
-10
+200
+95.0
+1
 1
 NIL
 HORIZONTAL
@@ -544,14 +555,14 @@ PENS
 SLIDER
 10
 95
-182
+180
 128
 nbh-max-cap
 nbh-max-cap
 0
-1000
-1000.0
-10
+200
+100.0
+5
 1
 NIL
 HORIZONTAL
@@ -647,13 +658,13 @@ PENS
 SLIDER
 10
 135
-182
+180
 168
 attribute-correlation
 attribute-correlation
 -1
 1
-0.4
+-0.3
 0.1
 1
 NIL
@@ -850,7 +861,7 @@ acceptable-vacancy-rate
 acceptable-vacancy-rate
 1
 100
-1.0
+4.0
 1
 1
 %
