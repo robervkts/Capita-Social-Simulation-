@@ -40,7 +40,7 @@ globals [
 
   border-width
 
-  m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
+  m-wealth-art-move-relocate;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
 ]
 
 ;; ********************** SETUP ******************************************************
@@ -213,25 +213,30 @@ to-report relocate [resident forced]
     let max-nbh position (max sat-vector) sat-vector
     update-relocation-color (max-nbh)
 
-    ifelse(forced)
-    [
-      let number-of-forced-relocations matrix:get m-wealth-move [who] of resident 2
-      set number-of-forced-relocations number-of-forced-relocations + 1
-      matrix:set  m-wealth-move [who] of resident 2 number-of-forced-relocations
-    ]
-    [
-      if(max-nbh != neighborhood)
-      [
-        let number-of-success matrix:get m-wealth-move [who] of resident 1
-        set number-of-success number-of-success + 1
-        matrix:set  m-wealth-move [who] of resident 1 number-of-success
-      ]
-    ]
+    update-relocation-details resident forced max-nbh
     set neighborhood max-nbh
     move-person-visual
   ]
   report [neighborhood] of resident
 end
+
+to update-relocation-details [resident forced max-nbh]
+  ifelse(forced)
+    [
+      let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 2
+      set number-of-forced-relocations number-of-forced-relocations + 1
+      matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-forced-relocations
+    ]
+    [
+      if(max-nbh != neighborhood)
+      [
+        let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 1
+        set number-of-success number-of-success + 1
+        matrix:set  m-wealth-art-move-relocate [who] of resident 1 number-of-success
+      ]
+    ]
+end
+
 
 ;; calculate residents satisfaction in neighborhood number nbh
 to-report satisfaction [resident nbh ]
@@ -524,7 +529,7 @@ res-per-nbh
 res-per-nbh
 0
 200
-95.0
+99.0
 1
 1
 NIL
@@ -664,7 +669,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.3
+0.0
 0.1
 1
 NIL
@@ -861,7 +866,7 @@ acceptable-vacancy-rate
 acceptable-vacancy-rate
 1
 100
-4.0
+0.0
 1
 1
 %
