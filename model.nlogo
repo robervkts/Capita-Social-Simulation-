@@ -406,58 +406,53 @@ end
 
 to-report track-attributes
 
-  let quartile ceiling (count persons * .25)
+
+  let quartile ceiling (count persons * .15)
 
   let wealthy max-n-of quartile persons [a-wealth]
   let poor min-n-of quartile persons [a-wealth]
 
+  let rich max-one-of wealthy [d-wealth]
+
+  let poor-artists max-n-of (ceiling quartile * .25) poor [d-art]
+  let poor-artist max-one-of poor-artists [a-art]
+
+  let colonizers min-n-of (ceiling quartile * .25) wealthy [d-wealth]
+  let colonizer max-one-of colonizers [d-art]
+
+  let poor-phillistines min-n-of (ceiling quartile * .25) poor [d-art]
+  let poor-phillistine min-one-of poor-phillistines [a-art]
 
 
-  let rich-artist max-one-of wealthy [a-art]
-  let rich-phillistine min-one-of wealthy [a-art]
-  let poor-artist max-one-of poor [a-art]
-  let poor-phillistine min-one-of poor [a-art]
+
+
+;  let rich-artist max-one-of wealthy [a-art]
+;  let rich-phillistine min-one-of wealthy [a-art]
+;  let poor-artist max-one-of poor [a-art]
+;  let poor-phillistine min-one-of poor [a-art]
+
+;  show "rich"
+;  show qualities rich
+;  show "colonizer"
+;  show qualities colonizer
+;  show "poor-phillistine"
+;  show qualities poor-phillistine
+;  show "poor-artist"
+;  show qualities poor-artist
+
 
 
 
   let tracked array:from-list n-values 4 [-1]
-  array:set tracked 0 average-wealth [neighborhood] of rich-artist
-  array:set tracked 1 average-wealth [neighborhood] of rich-phillistine
+  array:set tracked 0 average-wealth [neighborhood] of rich
+  array:set tracked 1 average-wealth [neighborhood] of colonizer
   array:set tracked 2 average-wealth [neighborhood] of poor-artist
   array:set tracked 3 average-wealth [neighborhood] of poor-phillistine
 
   report tracked
 end
 
-to-report track-desires
 
-  let quartile ceiling (count persons * .25)
-
-  let wealthy max-n-of quartile persons [a-wealth]
-  let poor min-n-of quartile persons [a-wealth]
-
-  let colonizers min-n-of (ceiling quartile * .25) wealthy [d-wealth]
-  let colonizer max-one-of colonizers [d-art]
-  show count colonizers
-
-
-
-  let rich-artist max-one-of wealthy [d-art]
-  let rich-phillistine min-one-of wealthy [d-art]
-  let poor-artist max-one-of poor [d-art]
-  let poor-phillistine min-one-of poor [d-art]
-
-
-
-  let tracked array:from-list n-values 5 [-1]
-  array:set tracked 0 average-wealth [neighborhood] of rich-artist
-  array:set tracked 1 average-wealth [neighborhood] of rich-phillistine
-  array:set tracked 2 average-wealth [neighborhood] of poor-artist
-  array:set tracked 3 average-wealth [neighborhood] of poor-phillistine
-  array:set tracked 4 average-wealth [neighborhood] of colonizer
-
-  report tracked
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -929,38 +924,16 @@ true
 true
 "" ""
 PENS
-"rich-artist" 1.0 0 -16777216 true "" "plot array:item track-attributes 0"
-"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track-attributes 1"
-"poor-artist" 1.0 0 -11085214 true "" "plot array:item track-attributes 2"
-"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track-attributes 3"
-"colonizer" 1.0 0 -5825686 true "" "plot array:item track-desires 4"
+"Rich" 1.0 0 -16777216 true "" "plot array:item track-attributes 0"
+"Colonizer" 1.0 0 -11221820 true "" "plot array:item track-attributes 1"
+"Poor-Artist" 1.0 0 -11085214 true "" "plot array:item track-attributes 2"
+"Poor-Phillistine" 1.0 0 -955883 true "" "plot array:item track-attributes 3"
 
 PLOT
-715
-515
-1232
-795
-tracking-desires
-NIL
-NIL
-0.0
-10.0
-5.0
-5.0
-true
-true
-"" ""
-PENS
-"rich-artist" 1.0 0 -16777216 true "" "plot array:item track-desires 0"
-"rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track-desires 1"
-"poor-artist" 1.0 0 -13840069 true "" "plot array:item track-desires 2"
-"poor-phillistine" 1.0 0 -955883 true "" "plot array:item track-desires 3"
-
-PLOT
-10
-510
-790
-850
+-20
+505
+220
+655
 Art vs Wealth
 NIL
 NIL
