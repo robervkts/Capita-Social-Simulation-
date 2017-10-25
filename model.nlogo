@@ -40,7 +40,7 @@ globals [
 
   border-width
 
-  m-wealth-move;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
+  m-wealth-art-move-relocate;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
 ]
 
 
@@ -69,13 +69,14 @@ to setup
   update-neighbourhood-distribution
 
 
-  let maximun-people-possible num-of-nbh * nbh-max-cap ;MAximun number of neighboors
-  show maximun-people-possible
-  set  m-wealth-move matrix:make-constant maximun-people-possible  3 -1 ;Initialize the matrix
+  let maximun-people-possible count turtles ;Maximun number of neighboors
+;  show maximun-people-possible
+  set  m-wealth-art-move-relocate matrix:make-constant maximun-people-possible  4 -1 ;Initialize the matrix
   ask persons [
-    matrix:set  m-wealth-move who 0 a-wealth
-    matrix:set  m-wealth-move who 1 0
-    matrix:set  m-wealth-move who 2 0
+    matrix:set  m-wealth-art-move-relocate who 0 a-wealth
+    matrix:set  m-wealth-art-move-relocate who 1 a-art
+    matrix:set  m-wealth-art-move-relocate who 2 0
+    matrix:set  m-wealth-art-move-relocate who 3 0
   ]
 
   reset-ticks
@@ -228,16 +229,16 @@ to-report relocate [resident forced]
     ]
      ifelse(forced)
   [
-    let number-of-forced-relocations matrix:get m-wealth-move [who] of resident 2
+    let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 2
     set number-of-forced-relocations number-of-forced-relocations + 1
-    matrix:set  m-wealth-move [who] of resident 2 number-of-forced-relocations
+    matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-forced-relocations
   ]
   [
     if(max-nbh != neighborhood)
     [
-      let number-of-success matrix:get m-wealth-move [who] of resident 1
+      let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 1
       set number-of-success number-of-success + 1
-      matrix:set  m-wealth-move [who] of resident 1 number-of-success
+      matrix:set  m-wealth-art-move-relocate [who] of resident 1 number-of-success
 
     ]
   ]
@@ -463,8 +464,8 @@ GRAPHICS-WINDOW
 4
 0
 0
-1
-1
+0
+0
 1
 ticks
 30.0
@@ -512,7 +513,7 @@ res-per-nbh
 res-per-nbh
 0
 1000
-80.0
+960.0
 10
 1
 NIL
@@ -549,7 +550,7 @@ nbh-max-cap
 nbh-max-cap
 0
 1000
-100.0
+1000.0
 10
 1
 NIL
@@ -622,10 +623,10 @@ a-art-max
 11
 
 PLOT
-3
-448
-206
-578
+5
+375
+208
+505
 min wealth
 time
 wealth
@@ -652,7 +653,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
--0.5
+0.4
 0.1
 1
 NIL
@@ -849,7 +850,7 @@ acceptable-vacancy-rate
 acceptable-vacancy-rate
 1
 100
-3.0
+1.0
 1
 1
 %
@@ -857,9 +858,9 @@ HORIZONTAL
 
 PLOT
 -15
-280
 210
-445
+210
+375
 Succesful moves vs Forced relocation
 NIL
 NIL
@@ -871,8 +872,8 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-move 1"
-"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-move 2"
+"default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 1"
+"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 2"
 
 PLOT
 1232
@@ -938,6 +939,25 @@ PENS
 "rich-phillistine" 1.0 0 -11221820 true "" "plot array:item track-desires 1"
 "poor-artist" 1.0 0 -13840069 true "" "plot array:item track-desires 2"
 "poor-phillistine" 1.0 0 -955883 true "" "plot array:item track-desires 3"
+
+PLOT
+10
+510
+210
+650
+Art vs Wealth
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 0.1 2 -5298144 true "" "histogram matrix:get-column m-wealth-art-move-relocate 0"
+"pen-1" 0.1 0 -11221820 true "" "histogram matrix:get-column m-wealth-art-move-relocate 1"
 
 @#$#@#$#@
 ## WHAT IS IT?
