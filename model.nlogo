@@ -223,16 +223,16 @@ end
 to update-relocation-details [resident forced max-nbh]
   ifelse(forced)
     [
-      let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 2
+      let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 3
       set number-of-forced-relocations number-of-forced-relocations + 1
-      matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-forced-relocations
+      matrix:set  m-wealth-art-move-relocate [who] of resident 3 number-of-forced-relocations
     ]
     [
       if(max-nbh != neighborhood)
       [
-        let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 1
+        let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 2
         set number-of-success number-of-success + 1
-        matrix:set  m-wealth-art-move-relocate [who] of resident 1 number-of-success
+        matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-success
       ]
     ]
 end
@@ -866,7 +866,7 @@ acceptable-vacancy-rate
 acceptable-vacancy-rate
 1
 100
-0.0
+1.0
 1
 1
 %
@@ -959,8 +959,8 @@ PENS
 PLOT
 10
 510
-210
-650
+790
+850
 Art vs Wealth
 NIL
 NIL
@@ -973,7 +973,7 @@ false
 "" ""
 PENS
 "default" 0.1 2 -5298144 true "" "histogram matrix:get-column m-wealth-art-move-relocate 0"
-"pen-1" 0.1 0 -11221820 true "" "histogram matrix:get-column m-wealth-art-move-relocate 1"
+"pen-1" 0.1 0 -14070903 true "" "histogram matrix:get-column m-wealth-art-move-relocate 1"
 
 @#$#@#$#@
 ## WHAT IS IT?
