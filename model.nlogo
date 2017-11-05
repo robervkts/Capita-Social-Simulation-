@@ -1,25 +1,36 @@
+; ****************
+; ** Extensions **
+; ****************
 extensions [matrix array]
-breed [borders border]
-breed [persons person]
-breed [clones clone]
-breed [averages average]
 
-;; The resident attributes
+; ********************
+; ** Declare breeds **
+; ********************
+breed [borders border]   ; graphics: the colored border that indicates each neighborhood
+breed [persons person]   ; the breed for residents
+breed [clones clone]     ; graphics: highlight moving residents
+breed [averages average] ; graphics: show average art/wealth of neighborhood
+
+; ***********************
+; ** Declare variables **
+; ***********************
+; The resident attributes
 persons-own [
-  neighborhood  ;;the number of the neighborhood that the resident currently lives in
-  d-art  ;; the resident's desire for art
-  d-wealth ;; the resident's desire for wealth
-  a-art ;; the resident's art contribution
-  a-wealth ;; the resident's wealth contribution
+  neighborhood  ; the number of the neighborhood that the resident currently lives in
+  d-art         ; the resident's desire for art
+  d-wealth      ; the resident's desire for wealth
+  a-art         ; the resident's art contribution
+  a-wealth      ; the resident's wealth contribution
 
-  myclone ;; graphics stuff
+  myclone       ; graphics: to show when the person is moving
 ]
 
+; The global variables
 globals [
-  num-of-nbh ;; the number of neighborhoods to be simulated
+  num-of-nbh ; the number of neighborhoods to be simulated
 
-  ;; u and s are the normal distribution parameters
-  ;; alpha and mm are the pareto distribution parameters
+  ; u and s are the normal distribution parameters
+  ; alpha and mm are the pareto distribution parameters
   d-wealth-u
   d-wealth-s
   d-art-u
@@ -33,20 +44,26 @@ globals [
   a-art-u
   a-art-s
 
+  ; graphics: the minimum and maximum art and wealth (for scaling the positions of the residents)
   a-art-min
   a-wealth-min
   a-art-max
   a-wealth-max
 
+  ; graphics: width of the neigborhood border
   border-width
 
-  m-wealth-art-move-relocate;; Matrix withwealth(0) and number of successul moving(1),forced relocations(2)
+  ; Matrix withwealth(0) and number of successul moving(1), forced relocations(2)
+  m-wealth-art-move-relocate
 ]
 
-;; ********************** SETUP ******************************************************
+; ***********
+; ** SETUP **
+; ***********
 to setup
   clear-all
 
+  ; setup all global variables
   set num-of-nbh 5
   set d-wealth-u 0.5
   set d-wealth-s 0.2
@@ -61,13 +78,16 @@ to setup
   set a-art-u 5
   set a-art-s 1
 
+  ; run setup functions for each breed
   setup-borders
   setup-patches
   setup-persons
   setup-averages
 
+  ; graphics: distribute the residents according to their art and wealth contribution
   initiate-neighbourhood-distribution
 
+  ; TODO comment
   let maximun-people-possible count turtles ;Maximun number of neighboors
 ;  show maximun-people-possible
   set  m-wealth-art-move-relocate matrix:make-constant maximun-people-possible  4 -1 ;Initialize the matrix
@@ -81,7 +101,7 @@ to setup
   reset-ticks
 end
 
-;; Create the neighborhoods
+; graphics: setup the colored patches where each patch is one neighborhood
 to setup-patches
   foreach (range (num-of-nbh)) [ [x]->
     ask borders with [pxcor = x] [
@@ -90,7 +110,7 @@ to setup-patches
   ]
 end
 
-;; Create borders
+; graphics: create a white square within the neigborhood borders
 to setup-borders
   set border-width 0.05
   foreach (range (num-of-nbh)) [ [x]->
@@ -103,22 +123,26 @@ to setup-borders
   ]
 end
 
-;; Create random agents for the neighborhoods
+; create residents for each neigborhood
 to setup-persons
-  ;; create res-per-nbh amount of residents for each neighborhood, according to the slider
-  ;; we position them in the corner of the patch. They can be moved around the patch later to represent their attributes.
+  ; create res-per-nbh amount of residents for each neighborhood, according to the slider
+  ; we position them in the corner of the patch. They can be moved around the patch later to represent their attributes.
   foreach (range (num-of-nbh)) [ [x]->
     create-persons res-per-nbh [ setxy x 0 ]
   ]
 
-  ;; initialize the residents. These distributions can be changed later and correlations added.
+  ; initialize the residents. These distributions can be changed later and correlations added.
   ask persons [
+    ; set the neighborhood
+    set neighborhood xcor
+
+    ; graphics: initialize resident variables which are important for displaying them
     set shape "dot"
     set size 0.05
-    set neighborhood xcor
     set color 17 + 10 * neighborhood
     set myclone nobody
 
+    ; TODO comment
     let corr-vars1 corr-normal-random d-art-u d-art-s 0
     set d-art first corr-vars1
     set d-wealth last corr-vars1
@@ -130,6 +154,7 @@ to setup-persons
   ]
 end
 
+; graphics: create the breed that shows the average art/wealth per neigborhood
 to setup-averages
 
   foreach (range (num-of-nbh)) [ [x]->
@@ -143,19 +168,24 @@ to setup-averages
   ]
 end
 
-;; ********************** GOOOOOOOOOOOOOOOO ******************************************************
+; **************
+; ** Go event **
+; **************
+; do one resident relocation
 to go-once
   move-resident
   move-averages
   tick
 end
 
+; do multiple resident relocations until the button is pressed again
 to go
   move-resident
   move-averages
   tick
 end
 
+; TODO comment and check this function
 to move-resident
   ;; choose a random non-empty neighborhood
   let nbh -1
@@ -184,6 +214,7 @@ to move-resident
   ]
 end
 
+; TODO comment and check this function
 to-report relocate [resident forced]
   ;; calculate the satisfaction for each neighborhood
   let sat-vector n-values num-of-nbh [ i -> satisfaction self i ]
@@ -210,16 +241,21 @@ to-report relocate [resident forced]
     ;; don't move
   ]
   [
+    ; TODO comment
     let max-nbh position (max sat-vector) sat-vector
+    ; graphics: make the color of the resident bright again
     update-relocation-color (max-nbh)
-
+    ; TODO comment
     update-relocation-details resident forced max-nbh
+    ; set the resident's new neighborhood
     set neighborhood max-nbh
+    ; graphics: move the person graphics wise to a new neighborhood
     move-person-visual
   ]
   report [neighborhood] of resident
 end
 
+; TODO comment and check this function
 to update-relocation-details [resident forced max-nbh]
   ifelse(forced)
     [
@@ -237,8 +273,10 @@ to update-relocation-details [resident forced max-nbh]
     ]
 end
 
-
-;; calculate residents satisfaction in neighborhood number nbh
+; ***********************
+; ** Support functions ** ;TODO comment the functions of this section
+; ***********************
+; calculate residents satisfaction in neighborhood number nbh
 to-report satisfaction [resident nbh ]
   let neighbor-set other persons with [neighborhood = nbh]
   report ([d-art] of resident * sum [a-art] of neighbor-set) + ([d-wealth] of resident * sum [a-wealth] of neighbor-set)
@@ -276,12 +314,12 @@ to-report min-wealth [nbh]
   report [a-wealth] of min-one-of persons with [neighborhood = nbh] [ [a-wealth] of self ]
 end
 
-;; draw from the pareto distribution
+; draw from the pareto distribution
 to-report random-pareto [alpha mm]
   report mm / ( random-float 1 ^ (1 / alpha) )
 end
 
-;; a truncated version of the normal distribution so that the number is always between 0 and 1. This implementation can be changed.
+; a truncated version of the normal distribution so that the number is always between 0 and 1. This implementation can be changed.
 to-report random-tnormal [u s]
   let retval 2
   while [retval < 0 or retval > 1] [
@@ -290,7 +328,7 @@ to-report random-tnormal [u s]
   report retval
 end
 
-;; https://math.stackexchange.com/questions/446093/generate-correlated-normal-random-variables
+; TODO comment https://math.stackexchange.com/questions/446093/generate-correlated-normal-random-variables
 to-report corr-normal-random [u s corr]
   let x1 random-normal 0 1
   let x2 random-normal 0 1
@@ -301,66 +339,78 @@ to-report corr-normal-random [u s corr]
   report list y1 y2
 end
 
-
-;; Graphics
+; **************
+; ** Graphics **
+; **************
+; graphics: distribute the residents according to their art and wealth contribution
 to initiate-neighbourhood-distribution
   foreach range (num-of-nbh)
   [
     x ->
     move-in-neighborhood x
   ]
+  ; move the average indicators in the neighborhood
   move-averages
 end
 
-;; Graphics
-to move-in-neighborhood [neighborhood-index] ;give neigbourhood index
+; graphics: initially move all residents on a given patch to their location relative to their wealth and art contributions
+to move-in-neighborhood [neighborhood-index]
+  ; retrieve the patch of the neighborhood
   let neighborhood-patch one-of (patches with [pxcor = neighborhood-index])
+  ; get max and min art and wealth
   set a-art-min [a-art] of min-one-of persons [a-art]
   set a-wealth-min [a-wealth] of min-one-of persons [a-wealth]
   set a-art-max [a-art] of max-one-of persons [a-art]
   set a-wealth-max [a-wealth] of max-one-of persons [a-wealth]
+  ; update all residents on the patch
   ask persons-on neighborhood-patch
   [
+    ; calculate the scale of the resident's wealth and art
     let wealth-plot-value ((a-wealth - a-wealth-min) / (a-wealth-max - a-wealth-min))
     let art-plot-value ((a-art - a-art-min) / (a-art-max - a-art-min))
+    ; calculate new x and y positions
     let new_x (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width))
     let new_y (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     setxy new_x new_y
-    ; graphics move clone
+    ; move the residents clone
     if (myclone != nobody)
       [ ask myclone [ setxy new_x new_y ] ]
   ]
 end
 
-;; Graphics
+; graphics move the average indicators in the neighborhood
 to move-averages
+  ; for each neighborhood
   foreach (range (num-of-nbh)) [ [x]->
     let neighborhood-patch one-of (patches with [pxcor = x])
+    ; get the average turtle on the given patch
     ask averages-on neighborhood-patch
     [
+      ; calculate the scale of the average wealth and art
       let wealth-plot-value (((average-wealth x) - a-wealth-min) / (a-wealth-max - a-wealth-min))
       let art-plot-value (((average-art x) - a-art-min) / (a-art-max - a-art-min))
-
+      ; set its x and y position
       setxy (x - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width)) (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
     ]
   ]
 end
 
-;; Graphics
-to move-person-visual ;give neigbourhood index
-
+; graphics: moves a resident graphics wise, also move its clone which indicates that it moved
+to move-person-visual
+  ; calculate the scale of the resident's wealth and art
   let wealth-plot-value ((a-wealth - a-wealth-min) / (a-wealth-max - a-wealth-min))
   let art-plot-value ((a-art - a-art-min) / (a-art-max - a-art-min))
+  ; calculate new x and y positions
   let new_x (neighborhood - 0.5 + border-width + wealth-plot-value * (1 - 2 * border-width))
   let new_y (- 0.5 + border-width + art-plot-value * (1 - 2 * border-width))
   setxy new_x new_y
-  ; graphics move clone
+  ; move the residents clone
   if (myclone != nobody)
     [ ask myclone [ setxy new_x new_y ] ]
 end
 
+; graphics: update color brightness of a resident when it has relocated
 to update-relocation-color [max-nbh]
-
   if (neighborhood != max-nbh)
     [
       if (myclone != nobody)
@@ -378,14 +428,10 @@ to update-relocation-color [max-nbh]
     ]
 end
 
-;; Unethical stuff
-to-report clone-person [ this-person ];; turtle reporter
-    ;; reports a reference to a copy of the given turtle
-    let me nobody
-    ask this-person [ hatch 1 [ set me self ] ]
-    report me
-end
-
+; **********
+; ** Gini **
+; **********
+;TODO comment
 to-report Gini [nbh]
   let wealths [a-wealth] of persons with [neighborhood = nbh]
   let sorted-wealths sort wealths
@@ -404,9 +450,11 @@ to-report Gini [nbh]
 
 end
 
+; **************
+; ** Tracking **
+; **************
+;TODO comment
 to-report track-attributes
-
-
   let quartile ceiling (count persons * .15)
 
   let wealthy max-n-of quartile persons [a-wealth]
@@ -423,9 +471,6 @@ to-report track-attributes
   let poor-phillistines min-n-of (ceiling quartile * .25) poor [d-art]
   let poor-phillistine min-one-of poor-phillistines [a-art]
 
-
-
-
 ;  let rich-artist max-one-of wealthy [a-art]
 ;  let rich-phillistine min-one-of wealthy [a-art]
 ;  let poor-artist max-one-of poor [a-art]
@@ -440,9 +485,6 @@ to-report track-attributes
 ;  show "poor-artist"
 ;  show qualities poor-artist
 
-
-
-
   let tracked array:from-list n-values 4 [-1]
   array:set tracked 0 average-wealth [neighborhood] of rich
   array:set tracked 1 average-wealth [neighborhood] of colonizer
@@ -451,8 +493,6 @@ to-report track-attributes
 
   report tracked
 end
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -664,7 +704,7 @@ attribute-correlation
 attribute-correlation
 -1
 1
-0.0
+-0.3
 0.1
 1
 NIL
