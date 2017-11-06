@@ -431,6 +431,9 @@ end
 ; **********
 ;TODO comment
 to-report Gini [nbh]
+  ;; reports the percentage of the population that has a percecentage of the wealth
+  ;; indicative of the amount of wealth disparity in a population.
+
   let wealths [a-wealth] of persons with [neighborhood = nbh]
   let sorted-wealths sort wealths
   let total-wealth sum sorted-wealths
@@ -451,38 +454,31 @@ end
 ; **************
 ; ** Tracking **
 ; **************
-;TODO comment
+
 to-report track-attributes
-  let quartile ceiling (count persons * .15)
 
-  let wealthy max-n-of quartile persons [a-wealth]
-  let poor min-n-of quartile persons [a-wealth]
+  ;returns aveage neighborhood wealth of fundamental agent types, rich, colonizer, poor-artist, and poor
+  let quartile ceiling (count persons * .15) ;quartile size
 
+  let wealthy max-n-of quartile persons [a-wealth] ; upper quartile of wealth
+  let poor min-n-of quartile persons [a-wealth] ;lower quartile of wealth
+
+  ; rich is of the upper quartile of wealth and has high desire for wealth
   let rich max-one-of wealthy [d-wealth]
 
-  let poor-artists max-n-of (ceiling quartile * .25) poor [d-art]
+  ; poor artist is poor with high desire for and attribute of art
+  let poor-artists max-n-of (ceiling quartile * .25) poor [d-art] ;
   let poor-artist max-one-of poor-artists [a-art]
 
+  ;colonizer is rich w high desire for art and low desire for wealth
   let colonizers min-n-of (ceiling quartile * .25) wealthy [d-wealth]
   let colonizer max-one-of colonizers [d-art]
 
+  ;poor is of the lower quartile of wealth and has low art contribution and desire
   let poor-phillistines min-n-of (ceiling quartile * .25) poor [d-art]
   let poor-phillistine min-one-of poor-phillistines [a-art]
 
-;  let rich-artist max-one-of wealthy [a-art]
-;  let rich-phillistine min-one-of wealthy [a-art]
-;  let poor-artist max-one-of poor [a-art]
-;  let poor-phillistine min-one-of poor [a-art]
-
-;  show "rich"
-;  show qualities rich
-;  show "colonizer"
-;  show qualities colonizer
-;  show "poor-phillistine"
-;  show qualities poor-phillistine
-;  show "poor-artist"
-;  show qualities poor-artist
-
+  ;returns an array of average wealth of the above agents
   let tracked array:from-list n-values 4 [-1]
   array:set tracked 0 average-wealth [neighborhood] of rich
   array:set tracked 1 average-wealth [neighborhood] of colonizer
