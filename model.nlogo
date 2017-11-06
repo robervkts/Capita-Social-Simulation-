@@ -69,12 +69,8 @@ to setup
   set d-wealth-s 0.2
   set d-art-u 0.5
   set d-art-s 0.2
-  set a-wealth-alpha 1.16
-  set a-wealth-mm 1.16
   set a-wealth-u 5
   set a-wealth-s 1
-  set a-art-alpha 1.16
-  set a-art-mm 1
   set a-art-u 5
   set a-art-s 1
 
@@ -142,7 +138,7 @@ to setup-persons
     set color 17 + 10 * neighborhood
     set myclone nobody
 
-    ; TODO comment Draw from the distributions
+    ; Draw from the distributions
     let corr-vars1 corr-normal-random d-art-u d-art-s 0
     set d-art first corr-vars1
     set d-wealth last corr-vars1
@@ -183,7 +179,7 @@ to go
   tick
 end
 
-; TODO comment and check this function
+; The relocation that happens in each timestep
 to move-resident
   ;; choose a random non-empty neighborhood
   let nbh -1
@@ -191,32 +187,28 @@ to move-resident
     set nbh random (num-of-nbh)
   ]
 
-  ;; find the least satisfied resident in the neighborhood and move him to the one where he would be the happiest
-;  ask min-one-of persons with [neighborhood = nbh] [ satisfaction self nbh] [
-;    set nbh relocate self
-;  ]
+  ;; find a random resident in the neighborhood and move him to the one where he would be the happiest
   ask one-of persons with [neighborhood = nbh] [
     let temp nbh
     set nbh relocate self false
-    if temp != nbh [
-      ;show word "not forced" nbh
-    ]
   ]
 
-  ;; if this breaches the maximum capacity of the neighborhood he pushes out the poorest one
+  ;; If this breaches the maximum capacity of the neighborhood he pushes out the poorest one
+  ;; This continues until no neighborhood is over maximum capacity.
   while [count persons with [neighborhood = nbh] > nbh-max-cap] [
     ask min-one-of persons with [neighborhood = nbh] [ [a-wealth] of self ] [
       set nbh relocate self true
-      ;show word "forced" nbh
     ]
   ]
 end
 
-; TODO comment and check this function
+; Moves the resident to the neighborhood that the agent is allowed to move to and is the most satisfied in.
+; Returns the neighborhood.
+; If forced is true then he cannot stay in the same neighborhood.
 to-report relocate [resident forced]
   ;; calculate the satisfaction for each neighborhood
   let sat-vector n-values num-of-nbh [ i -> satisfaction self i ]
-  ;; If the resident can't afford to live in a neighborhood he will not move there, defined as having satisfaction -1
+  ;; If the resident can't afford to live in a neighborhood he will not move there, defined as having satisfaction -1000
   ;; He can't afford it if it is full and he is below average wealth
   foreach (range (num-of-nbh)) [ [x]->
     ifelse ((forced and x = [neighborhood] of resident)
@@ -224,22 +216,18 @@ to-report relocate [resident forced]
       (x != [neighborhood] of resident and [a-wealth] of resident <= (average-wealth x)) and ((count persons with [neighborhood = x]) >= floor (nbh-max-cap * (1 - acceptable-vacancy-rate / 100)))
       )
     [
-;      show word "[a-wealth] of resident " [a-wealth] of resident
-;      show word "(average-wealth x) " (average-wealth x)
-;      show word "(count persons with [neighborhood = x]) " (count persons with [neighborhood = x])
+      ; he is not allowed to move to the neighborhood
       set sat-vector replace-item x sat-vector -1000
     ] [
-;      show word "2[a-wealth] of resident " [a-wealth] of resident
-;      show word "2(average-wealth x) " (average-wealth x)
-;      show word "2(count persons with [neighborhood = x]) " (count persons with [neighborhood = x])
+      ; he is allowed to move to the neighborhood
     ]
   ]
   ;; find the neighborhood he can afford and is the happiest to go to
-  ifelse max sat-vector = -1 [
+  ifelse max sat-vector = -1000 [
     ;; don't move
   ]
   [
-    ; TODO comment
+    ; choose the neighborhood he is the happiest to live in and allowed to live in
     let max-nbh position (max sat-vector) sat-vector
     ; graphics: make the color of the resident bright again
     update-relocation-color (max-nbh)
@@ -326,7 +314,8 @@ to-report random-tnormal [u s]
   report retval
 end
 
-; TODO comment https://math.stackexchange.com/questions/446093/generate-correlated-normal-random-variables
+; Draws two normally distributed numbers with mean=u and standard deviation s with a correlation coefficient corr
+; see: https://math.stackexchange.com/questions/446093/generate-correlated-normal-random-variables
 to-report corr-normal-random [u s corr]
   let x1 random-normal 0 1
   let x2 random-normal 0 1
