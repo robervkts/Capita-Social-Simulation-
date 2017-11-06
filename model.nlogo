@@ -142,12 +142,10 @@ to setup-persons
     set color 17 + 10 * neighborhood
     set myclone nobody
 
-    ; TODO comment
+    ; TODO comment Draw from the distributions
     let corr-vars1 corr-normal-random d-art-u d-art-s 0
     set d-art first corr-vars1
     set d-wealth last corr-vars1
-;    set a-art random-pareto a-art-alpha a-art-mm
-;    set a-wealth random-pareto a-wealth-alpha a-wealth-mm
     let corr-vars2 corr-normal-random a-art-u a-art-s attribute-correlation
     set a-art first corr-vars2
     set a-wealth last corr-vars2
