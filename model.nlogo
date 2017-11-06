@@ -53,7 +53,7 @@ globals [
   ; graphics: width of the neigborhood border
   border-width
 
-  ; Matrix withwealth(0) and number of successul moving(1), forced relocations(2)
+  ; Matrix withwealth(0), art(1) and number of successul moving(2), forced relocations(3)
   m-wealth-art-move-relocate
 ]
 
@@ -83,10 +83,8 @@ to setup
   ; graphics: distribute the residents according to their art and wealth contribution
   initiate-neighbourhood-distribution
 
-  ; TODO comment
-  let maximun-people-possible count turtles ;Maximun number of neighboors
 ;  show maximun-people-possible
-  set  m-wealth-art-move-relocate matrix:make-constant maximun-people-possible  4 -1 ;Initialize the matrix
+  set  m-wealth-art-move-relocate matrix:make-constant count turtles  4 -1 ;Initialize the matrix
   ask persons [
     matrix:set  m-wealth-art-move-relocate who 0 a-wealth
     matrix:set  m-wealth-art-move-relocate who 1 a-art
@@ -231,8 +229,8 @@ to-report relocate [resident forced]
     let max-nbh position (max sat-vector) sat-vector
     ; graphics: make the color of the resident bright again
     update-relocation-color (max-nbh)
-    ; TODO comment
-    update-relocation-details resident forced max-nbh
+    ; Update matrix m-wealth-art-move-relocate with new values for relocation/forced relocation
+    update-relocation-details resident forced
     ; set the resident's new neighborhood
     set neighborhood max-nbh
     ; graphics: move the person graphics wise to a new neighborhood
@@ -241,8 +239,11 @@ to-report relocate [resident forced]
   report [neighborhood] of resident
 end
 
-; TODO comment and check this function
-to update-relocation-details [resident forced max-nbh]
+;updates the m-wealth-art-move-relocate with new details
+;if forced is true then the number of forced relocations are updated.
+;resident should be thw attribute who of the turtle that is relocated
+to update-relocation-details [resident forced]
+
   ifelse(forced)
     [
       let number-of-forced-relocations matrix:get m-wealth-art-move-relocate [who] of resident 3
@@ -250,12 +251,11 @@ to update-relocation-details [resident forced max-nbh]
       matrix:set  m-wealth-art-move-relocate [who] of resident 3 number-of-forced-relocations
     ]
     [
-      if(max-nbh != neighborhood)
-      [
+
         let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 2
         set number-of-success number-of-success + 1
         matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-success
-      ]
+
     ]
 end
 
@@ -906,8 +906,8 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 1"
-"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 2"
+"default" 1.0 0 -5825686 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 2"
+"pen-1" 1.0 0 -7500403 true "" "plot sum matrix:get-column m-wealth-art-move-relocate 3"
 
 PLOT
 1232
