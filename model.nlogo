@@ -30,17 +30,12 @@ globals [
   num-of-nbh ; the number of neighborhoods to be simulated
 
   ; u and s are the normal distribution parameters
-  ; alpha and mm are the pareto distribution parameters
   d-wealth-u
   d-wealth-s
   d-art-u
   d-art-s
-  a-wealth-alpha
-  a-wealth-mm
   a-wealth-u
   a-wealth-s
-  a-art-alpha
-  a-art-mm
   a-art-u
   a-art-s
 
@@ -185,7 +180,7 @@ to move-resident
     set nbh random (num-of-nbh)
   ]
 
-  ;; find a random resident in the neighborhood and move him to the one where he would be the happiest
+  ;; find a random resident in the neighborhood and move him to the one where he would be the happiest and is allowed to live
   ask one-of persons with [neighborhood = nbh] [
     let temp nbh
     set nbh relocate self false
@@ -207,7 +202,7 @@ to-report relocate [resident forced]
   ;; calculate the satisfaction for each neighborhood
   let sat-vector n-values num-of-nbh [ i -> satisfaction self i ]
   ;; If the resident can't afford to live in a neighborhood he will not move there, defined as having satisfaction -1000
-  ;; He can't afford it if it is full and he is below average wealth
+  ;; He can't afford it if its vacancy rate is less than the acceptable-vacancy-rate and he is below the average wealth of the neighborhood
   foreach (range (num-of-nbh)) [ [x]->
     ifelse ((forced and x = [neighborhood] of resident)
       or
@@ -251,11 +246,9 @@ to update-relocation-details [resident forced]
       matrix:set  m-wealth-art-move-relocate [who] of resident 3 number-of-forced-relocations
     ]
     [
-
         let number-of-success matrix:get m-wealth-art-move-relocate [who] of resident 2
         set number-of-success number-of-success + 1
         matrix:set  m-wealth-art-move-relocate [who] of resident 2 number-of-success
-
     ]
 end
 
@@ -298,11 +291,6 @@ end
 
 to-report min-wealth [nbh]
   report [a-wealth] of min-one-of persons with [neighborhood = nbh] [ [a-wealth] of self ]
-end
-
-; draw from the pareto distribution
-to-report random-pareto [alpha mm]
-  report mm / ( random-float 1 ^ (1 / alpha) )
 end
 
 ; a truncated version of the normal distribution so that the number is always between 0 and 1. This implementation can be changed.
@@ -584,7 +572,7 @@ nbh-max-cap
 nbh-max-cap
 0
 200
-100.0
+195.0
 5
 1
 NIL
@@ -974,23 +962,37 @@ PENS
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+This model aims to evaluate whether the possession and pursuit of cultural and economic capital are contributing factors towards neighborhood gentrification. Supply side theory shows that pursuit and possession of the latter is sufficient for gentrification to occur. However, it remains to be determined how the pursuit and possession of the former either inhibits or augments this dynamic.
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+The model has 5 neighborhoods which are initialized with randomly generated residents. Each tick a random agent checks if he wants to relocate to another neighborhood and if he is more satisfied there and is allowed to move there, then he moves. If the neighborhood he moves to is overflowed after the new resident moved in the poorest resident in the
+neighborhood is kicked out and he is forced to relocate. The loop continues
+checking for overflows until no neighborhood is overflowed and then the timestep ends.
+Each agent has the following attributes:
+	a-art: cultural capital 
+	a-wealth: economic capital 
+	d-art: the desire to be around people with a-art
+	d-wealth: the desire to be around people with a-wealth
+The satisfaction of a resident in a neighborhood is defined as:
+	sat = d-art * avg_art(neighborhood) + d-wealth * avg_wealth(neighborhood)
+An agent is allowed to move into a neighborhood if his a-wealth is higher than avg_wealth(neighborhood) or if the vacancy rate of the neighborhood is higher than the acceptable-vacancy-rate.
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+res-per-nbh is the number of agents in each neighborhood after setup.
+nbh-max-cap is the maximum number of agents that are allowed in each neighborhood before it overflows.
+attribute-correlation is the correlation coefficient between a-art and a-wealth of residents
+acceptable-vacancy-rate is the percentage vacancy allowed in a neighborhood  before letting in residents with lower a-wealth than the average of the neighborhood.
+
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+Make sure that there is always enough room for all the agents to live.
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+The most interesting change in behavior is when changing the attribute-correlation
 
 ## EXTENDING THE MODEL
 
@@ -1006,7 +1008,7 @@ PENS
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+https://github.com/robervkts/Capita_Social_Simulation.git
 @#$#@#$#@
 default
 true
